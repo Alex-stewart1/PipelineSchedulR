@@ -1,9 +1,9 @@
-﻿using SchedulR.Interfaces;
-using SchedulR.Pipeline.Executors;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SchedulR.Interfaces;
 
 namespace SchedulR.Pipeline;
 
-public class PipelineExecutor
+internal class PipelineExecutor
 {
     private readonly IServiceProvider _serviceProvider;
 
@@ -12,14 +12,22 @@ public class PipelineExecutor
         _serviceProvider = serviceProvider;
     }
 
-    public Task<TResult> ExecuteAsync<TResult, TExecutable>(CancellationToken cancellationToken) where TExecutable : IExecutable<TResult>
-        => ExecuteAsync<TResult>(typeof(TExecutable), cancellationToken);
-
-    private async Task<TResult> ExecuteAsync<TResult>(Type executorType, CancellationToken cancellationToken)
+    internal Task<TResult> ExecuteAsync<TResult>(Type executorType, CancellationToken cancellationToken)
     {
-        var pipelineExecutorType = typeof(PipelineExecutor<>).MakeGenericType(executorType);
-        var pipelineExecutor = (BasePipelineExecutor)(Activator.CreateInstance(pipelineExecutorType, _serviceProvider) ?? throw new InvalidOperationException("Unable to create instance of pipeline executor."));
-        var result = await pipelineExecutor.BaseExecuteAsync(_serviceProvider, cancellationToken);
-        return result is null ? throw new InvalidOperationException("Execution result is null.") : (TResult)result;
+        //TODO: Implement proper key (guid + some name)
+        var executableKey = executorType.FullName ?? throw new InvalidOperationException($"Failed to get key for {executorType.Name}");
+
+        PipelineDelegate<TResult> current = (ct) => _serviceProvider.GetRequiredKeyedService<IExecutable<TResult>>(executableKey).ExecuteAsync(ct);
+
+        var pipelines = _serviceProvider.GetKeyedServices<IPipeline<TResult>>(executableKey);
+
+        foreach (var pipeline in pipelines.Reverse())
+        {
+            PipelineDelegate<TResult> next = current;
+            current = (ct) => pipeline.ExecuteAsync(next, cancellationToken);
+        }
+
+        return current(cancellationToken);
+
     }
 }

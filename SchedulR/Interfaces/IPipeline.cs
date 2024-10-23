@@ -6,5 +6,3 @@ public interface IPipeline<TResult>
 {
     Task<TResult> ExecuteAsync(PipelineDelegate<TResult> next, CancellationToken cancellationToken);
 }
-
-public interface IPipeline<TResult, TExecutable> : IPipeline<TResult> where TExecutable : IExecutable<TResult> { }
