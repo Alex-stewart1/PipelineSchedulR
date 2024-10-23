@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SchedulR.Interfaces;
 
-namespace SchedulR.Tests.Stubs.Pipeline
+namespace SchedulR.Tests.Stubs.Pipeline;
+
+internal class PipelineStubs : IPipeline<string, ExecutableStub>
 {
-    internal class PipelineStubs
+    public async Task<string> ExecuteAsync(PipelineDelegate<string> next, CancellationToken cancellationToken)
     {
+        return await next(cancellationToken);
     }
 }

@@ -2,10 +2,10 @@
 
 namespace SchedulR.Tests.Stubs.Pipeline;
 
-internal class ExecutableStubs : IExecutable<string>
+internal class ExecutableStub : IExecutable<string>
 {
     public Task<string> ExecuteAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult(nameof(ExecutableStubs));
+        return Task.FromResult(nameof(ExecutableStub));
     }
 }
