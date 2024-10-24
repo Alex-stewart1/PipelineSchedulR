@@ -1,8 +1,10 @@
-﻿namespace SchedulR.Interfaces;
+﻿using SchedulR.Common.Types;
 
-public delegate Task<TResult> PipelineDelegate<TResult>(CancellationToken cancellationToken);
+namespace SchedulR.Interfaces;
 
-public interface IPipeline<TResult>
+public delegate Task<Result> PipelineDelegate(CancellationToken cancellationToken);
+
+public interface IPipeline
 {
-    Task<TResult> ExecuteAsync(PipelineDelegate<TResult> next, CancellationToken cancellationToken);
+    Task<Result> ExecuteAsync(PipelineDelegate next, CancellationToken cancellationToken);
 }

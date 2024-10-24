@@ -1,10 +1,11 @@
-﻿namespace SchedulR.Interfaces;
+﻿using SchedulR.Common.Types;
+
+namespace SchedulR.Interfaces;
 
 /// <summary>
 /// Represents a task that can be executed by the scheduler pipeline
 /// </summary>
-/// <typeparam name="TResult"></typeparam>
-public interface IExecutable<TResult>
+public interface IExecutable
 {
-    Task<TResult> ExecuteAsync(CancellationToken cancellationToken);
+    Task<Result> ExecuteAsync(CancellationToken cancellationToken);
 }

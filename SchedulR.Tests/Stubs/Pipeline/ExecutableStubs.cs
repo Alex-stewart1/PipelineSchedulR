@@ -1,32 +1,20 @@
-﻿using SchedulR.Interfaces;
+﻿using SchedulR.Common.Types;
+using SchedulR.Interfaces;
 
 namespace SchedulR.Tests.Stubs.Pipeline;
 
-internal class ExecutableStub1 : IExecutable<string>
+internal class BaseExecutableStub : IExecutable
 {
     public DateTimeOffset? ExecutionTime { get; private set; } = null;
-    public string? Result { get; private set; } = null;
-    public async Task<string> ExecuteAsync(CancellationToken cancellationToken)
+    public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         await Task.Delay(100, CancellationToken.None); // Simulate some work
 
         ExecutionTime = DateTimeOffset.UtcNow;
-        Result = nameof(ExecutableStub1);
 
-        return Result;
+        return Result.Success();
     }
 }
-internal class ExecutableStub2 : IExecutable<string>
-{
-    public DateTimeOffset? ExecutionTime { get; private set; } = null;
-    public string? Result { get; private set; } = null;
-    public async Task<string> ExecuteAsync(CancellationToken cancellationToken)
-    {
-        await Task.Delay(100, CancellationToken.None); // Simulate some work
 
-        ExecutionTime = DateTimeOffset.UtcNow;
-        Result = nameof(ExecutableStub2);
-
-        return Result;
-    }
-}
+internal class ExecutableStub1 : BaseExecutableStub { }
+internal class ExecutableStub2 : BaseExecutableStub { }

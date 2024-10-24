@@ -1,33 +1,41 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SchedulR.Common.Helpers;
+using SchedulR.Common.Types;
 using SchedulR.Interfaces;
 
 namespace SchedulR.Pipeline;
 
-internal class PipelineExecutor
+internal static class PipelineExecutor
 {
-    private readonly IServiceProvider _serviceProvider;
-
-    public PipelineExecutor(IServiceProvider serviceProvider)
+    /// <summary>
+    /// Executes the pipeline associated with the executor type.
+    /// </summary>
+    /// <param name="executorType"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>
+    /// Result of the pipeline execution
+    /// </returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    internal static Task<Result> ExecuteAsync(Type executorType, IServiceProvider provider, CancellationToken cancellationToken)
     {
-        _serviceProvider = serviceProvider;
-    }
+        // Ensure the executor type implements IExecutable
+        if (!typeof(IExecutable).IsAssignableFrom(executorType))
+        {
+            throw new InvalidOperationException($"Type {executorType.Name} does not implement {typeof(IExecutable).FullName}");
+        }
 
-    internal Task<TResult> ExecuteAsync<TResult>(Type executorType, CancellationToken cancellationToken)
-    {
-        //TODO: Implement proper key (guid + some name)
-        var executableKey = executorType.FullName ?? throw new InvalidOperationException($"Failed to get key for {executorType.Name}");
+        var executableKey = KeyedServiceHelper.GetExecutableKey(executorType);
 
-        PipelineDelegate<TResult> current = (ct) => _serviceProvider.GetRequiredKeyedService<IExecutable<TResult>>(executableKey).ExecuteAsync(ct);
+        PipelineDelegate current = (ct) => provider.GetRequiredKeyedService<IExecutable>(executableKey).ExecuteAsync(ct);
 
-        var pipelines = _serviceProvider.GetKeyedServices<IPipeline<TResult>>(executableKey);
+        var pipelines = provider.GetKeyedServices<IPipeline>(executableKey);
 
         foreach (var pipeline in pipelines.Reverse())
         {
-            PipelineDelegate<TResult> next = current;
+            PipelineDelegate next = current;
             current = (ct) => pipeline.ExecuteAsync(next, cancellationToken);
         }
 
         return current(cancellationToken);
-
     }
 }
