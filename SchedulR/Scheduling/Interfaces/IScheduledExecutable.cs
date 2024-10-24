@@ -1,4 +1,4 @@
-﻿namespace SchedulR.Scheduler.Interfaces;
+﻿namespace SchedulR.Scheduling.Interfaces;
 
 public interface IScheduleExecutableConfiguration
 {

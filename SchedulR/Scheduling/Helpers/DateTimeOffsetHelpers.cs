@@ -1,4 +1,4 @@
-﻿namespace SchedulR.Scheduler.Helpers;
+﻿namespace SchedulR.Scheduling.Helpers;
 
 internal static class DateTimeOffsetHelpers
 {

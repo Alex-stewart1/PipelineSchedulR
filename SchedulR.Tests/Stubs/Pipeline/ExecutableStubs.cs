@@ -5,12 +5,12 @@ namespace SchedulR.Tests.Stubs.Pipeline;
 
 internal class BaseExecutableStub : IExecutable
 {
-    public DateTimeOffset? ExecutionTime { get; private set; } = null;
+    public List<DateTimeOffset> ExecutionTimes { get; } = [];
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         await Task.Delay(100, CancellationToken.None); // Simulate some work
 
-        ExecutionTime = DateTimeOffset.UtcNow;
+        ExecutionTimes.Add(DateTimeOffset.UtcNow);
 
         return Result.Success();
     }

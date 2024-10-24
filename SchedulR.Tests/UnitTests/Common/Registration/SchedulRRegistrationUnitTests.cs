@@ -6,7 +6,7 @@ using SchedulR.Tests.Stubs.Pipeline;
 
 namespace SchedulR.Tests.UnitTests.Common.Registration;
 
-public class PipelineRegistrationUnitTests
+public class SchedulRRegistrationUnitTests
 {
     public class AddSchedulR
     {

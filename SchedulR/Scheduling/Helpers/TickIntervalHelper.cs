@@ -1,10 +1,10 @@
-﻿namespace SchedulR.Scheduler.Helpers;
+﻿namespace SchedulR.Scheduling.Helpers;
 
 internal static class TickIntervalHelper
 {
-    private const long MaxMinutesToTicks = 1537228672809129301; // long.MaxValue / 6
-    private const long MaxTicksToSeconds = 922337203685477580; // long.MaxValue / 10
-    private const short SecondsPerTick = 10;
+    internal const long MaxMinutesToTicks = 1537228672809129301; // long.MaxValue / 6
+    internal const long MaxTicksToSeconds = 922337203685477580; // long.MaxValue / 10
+    internal const short SecondsPerTick = 10;
     /// <summary>
     /// Converts ticks to seconds. I.e. assuming 10 seconds per tick, 4 (ticks) would be converted to 40 (seconds).
     /// </summary>

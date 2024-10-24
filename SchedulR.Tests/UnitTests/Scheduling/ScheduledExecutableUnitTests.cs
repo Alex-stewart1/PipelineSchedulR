@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using SchedulR.Scheduler;
+using SchedulR.Scheduling;
 
-namespace SchedulR.Tests.UnitTests.Scheduler;
+namespace SchedulR.Tests.UnitTests.Scheduling;
 
 public class ScheduledExecutableUnitTests
 {

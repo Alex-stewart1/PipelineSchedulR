@@ -1,24 +1,19 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SchedulR.Common.Types;
 using SchedulR.Pipeline;
-using SchedulR.Scheduler.Helpers;
-using SchedulR.Scheduler.Interfaces;
+using SchedulR.Scheduling.Helpers;
+using SchedulR.Scheduling.Interfaces;
 
-namespace SchedulR.Scheduler;
+namespace SchedulR.Scheduling;
 
-internal class ScheduledExecutable : IScheduleInterval, IScheduleExecutableConfiguration
+internal class ScheduledExecutable(Type executableType, IServiceScopeFactory serviceScopeFactory) : IScheduleInterval, IScheduleExecutableConfiguration
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly Type _executableType;
-    private readonly string _executableId;
+    private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
+    private readonly Type _executableType = executableType;
+    private readonly string _executableId = Guid.NewGuid().ToString();
     private long _tickInterval;
     private DateTimeOffset _nextExecutionTime = DateTimeOffset.MinValue;
-    public ScheduledExecutable(Type executableType, IServiceScopeFactory serviceScopeFactory)
-    {
-        _executableType = executableType;
-        _serviceScopeFactory = serviceScopeFactory;
-        _executableId = Guid.NewGuid().ToString();
-    }
+
     public Task<Result> ExecuteAsync(CancellationToken token)
     {
         using var asyncScope = _serviceScopeFactory.CreateAsyncScope();
@@ -33,7 +28,10 @@ internal class ScheduledExecutable : IScheduleInterval, IScheduleExecutableConfi
     {
         _nextExecutionTime = now.AddSeconds(TickIntervalHelper.TicksToSeconds(_tickInterval)).PreciseUpToSecond();
     }
-
+    public string GetUniqueId()
+    {
+        return _executableId;
+    }
     public IScheduleExecutableConfiguration EveryMinutes(long minutes)
     {
         _tickInterval = TickIntervalHelper.MinutesToTicks(minutes);
