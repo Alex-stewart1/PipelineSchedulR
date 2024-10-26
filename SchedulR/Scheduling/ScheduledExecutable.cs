@@ -12,7 +12,11 @@ internal class ScheduledExecutable(Type executableType, IServiceScopeFactory ser
     private readonly Type _executableType = executableType;
     private readonly string _executableId = Guid.NewGuid().ToString();
     private long _tickInterval;
-    private DateTimeOffset _nextExecutionTime = DateTimeOffset.MinValue;
+    private DateTimeOffset _nextExecutionTime = DateTimeOffset.MaxValue;
+    private bool _runOnStart = false;
+    private bool _preventExecutionOverlap = false;
+    public string ExecutableId => _executableId;
+    public bool ShouldPreventExecutionOverlap => _preventExecutionOverlap;
 
     public Task<Result> ExecuteAsync(CancellationToken token)
     {
@@ -28,13 +32,32 @@ internal class ScheduledExecutable(Type executableType, IServiceScopeFactory ser
     {
         _nextExecutionTime = now.AddSeconds(TickIntervalHelper.TicksToSeconds(_tickInterval)).PreciseUpToSecond();
     }
-    public string GetUniqueId()
+    public void InitializeNextExecutionTime(DateTimeOffset now)
     {
-        return _executableId;
+        if (_runOnStart)
+        {
+            _nextExecutionTime = now.PreciseUpToSecond();
+        }
+        else
+        {
+            ExecutedAt(now);
+        }
     }
     public IScheduleExecutableConfiguration EveryMinutes(long minutes)
     {
         _tickInterval = TickIntervalHelper.MinutesToTicks(minutes);
+        return this;
+    }
+
+    public IScheduleExecutableConfiguration RunOnStart()
+    {
+        _runOnStart = true;
+        return this;
+    }
+
+    public IScheduleExecutableConfiguration PreventExecutionOverlap()
+    {
+        _preventExecutionOverlap = true;
         return this;
     }
 }

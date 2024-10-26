@@ -17,7 +17,7 @@ public class PipelineExecutorIntegrationTests
         var serviceProvider = new ServiceCollection()
             .AddScoped(provider => executableStub)
             .AddScoped(provider => pipelineStub)
-            .AddSchedulR(pipelineBuilder =>
+            .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
                     .Executable<ExecutableStub1>()
@@ -41,7 +41,7 @@ public class PipelineExecutorIntegrationTests
         var serviceProvider = new ServiceCollection()
             .AddScoped(provider => executableStub)
             .AddScoped(provider => pipelineStub)
-            .AddSchedulR(pipelineBuilder =>
+            .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
                     .Executable<ExecutableStub1>()
@@ -55,9 +55,9 @@ public class PipelineExecutorIntegrationTests
         // Assert
         pipelineStub.BeforeExecutionTime.Should().NotBeNull();
         pipelineStub.AfterExecutionTime.Should().NotBeNull();
-        executableStub.ExecutionTime.Should().NotBeNull();
-        pipelineStub.BeforeExecutionTime.Should().BeBefore(executableStub.ExecutionTime!.Value);
-        executableStub.ExecutionTime.Should().BeBefore(pipelineStub.AfterExecutionTime!.Value);
+        executableStub.ExecutionTimes.Should().HaveCount(1);
+        pipelineStub.BeforeExecutionTime.Should().BeBefore(executableStub.ExecutionTimes[0]);
+        executableStub.ExecutionTimes[0].Should().BeBefore(pipelineStub.AfterExecutionTime!.Value);
     }
     [Fact]
     public async Task ExecuteAsync_WhenCalledWithNoPipeline_ShouldReturnExecutableResult()
@@ -67,7 +67,7 @@ public class PipelineExecutorIntegrationTests
 
         var serviceProvider = new ServiceCollection()
             .AddScoped(provider => executableStub)
-            .AddSchedulR(pipelineBuilder =>
+            .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
                     .Executable<ExecutableStub1>();
@@ -94,7 +94,7 @@ public class PipelineExecutorIntegrationTests
             .AddScoped(provider => pipelineStub1)
             .AddScoped(provider => pipelineStub2)
             .AddScoped(provider => pipelineStub3)
-            .AddSchedulR(pipelineBuilder =>
+            .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
                     .Executable<ExecutableStub1>()
@@ -111,13 +111,13 @@ public class PipelineExecutorIntegrationTests
 
         // Executable
         result.IsSuccess.Should().BeTrue();
-        executableStub.ExecutionTime.Should().NotBeNull();
+        executableStub.ExecutionTimes.Should().HaveCount(1);
 
         // Pipeline 3
         pipelineStub3.BeforeExecutionTime.Should().NotBeNull();
         pipelineStub3.AfterExecutionTime.Should().NotBeNull();
-        pipelineStub2.BeforeExecutionTime.Should().BeBefore(executableStub.ExecutionTime!.Value);
-        pipelineStub2.AfterExecutionTime.Should().BeAfter(executableStub.ExecutionTime!.Value);
+        pipelineStub2.BeforeExecutionTime.Should().BeBefore(executableStub.ExecutionTimes[0]);
+        pipelineStub2.AfterExecutionTime.Should().BeAfter(executableStub.ExecutionTimes[0]);
 
         // Pipeline 2
         pipelineStub3.BeforeExecutionTime.Should().NotBeNull();
@@ -148,7 +148,7 @@ public class PipelineExecutorIntegrationTests
             .AddScoped(provider => executableStub2)
             .AddScoped(provider => pipelineStub2)
             .AddScoped(provider => pipelineStub3)
-            .AddSchedulR(pipelineBuilder =>
+            .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
                     .Executable<ExecutableStub1>()
@@ -164,11 +164,11 @@ public class PipelineExecutorIntegrationTests
         // Act & Assert
         await PipelineExecutor.ExecuteAsync(typeof(ExecutableStub1), serviceProvider, CancellationToken.None);
 
-        executableStub1.ExecutionTime.Should().NotBeNull();
+        executableStub1.ExecutionTimes.Should().HaveCount(1);
         pipelineStub1.BeforeExecutionTime.Should().NotBeNull();
         pipelineStub1.AfterExecutionTime.Should().NotBeNull();
 
-        executableStub2.ExecutionTime.Should().BeNull();
+        executableStub2.ExecutionTimes.Should().BeEmpty();
         pipelineStub2.BeforeExecutionTime.Should().BeNull();
         pipelineStub2.AfterExecutionTime.Should().BeNull();
         pipelineStub3.BeforeExecutionTime.Should().BeNull();
@@ -176,7 +176,7 @@ public class PipelineExecutorIntegrationTests
 
         await PipelineExecutor.ExecuteAsync(typeof(ExecutableStub2), serviceProvider, CancellationToken.None);
 
-        executableStub2.ExecutionTime.Should().NotBeNull();
+        executableStub2.ExecutionTimes.Should().HaveCount(1);
         pipelineStub2.BeforeExecutionTime.Should().NotBeNull();
         pipelineStub2.AfterExecutionTime.Should().NotBeNull();
         pipelineStub3.BeforeExecutionTime.Should().NotBeNull();

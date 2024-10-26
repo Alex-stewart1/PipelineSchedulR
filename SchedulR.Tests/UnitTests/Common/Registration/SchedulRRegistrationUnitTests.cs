@@ -17,10 +17,10 @@ public class SchedulRRegistrationUnitTests
             var services = new ServiceCollection();
 
             // Act
-            services.AddSchedulR(builder =>
+            services.AddSchedulR((pipelineBuilder, _) =>
             {
-                builder
-                    .Executable<ExecutableStub1>();
+                pipelineBuilder
+                     .Executable<ExecutableStub1>();
             });
 
             // Assert
@@ -36,11 +36,11 @@ public class SchedulRRegistrationUnitTests
             var services = new ServiceCollection();
 
             // Act
-            services.AddSchedulR(builder =>
+            services.AddSchedulR((pipelineBuilder, _) =>
             {
-                builder
-                    .Executable<ExecutableStub1>()
-                    .WithPipeline<PipelineStub1>();
+                pipelineBuilder
+                     .Executable<ExecutableStub1>()
+                     .WithPipeline<PipelineStub1>();
             });
 
             // Assert
