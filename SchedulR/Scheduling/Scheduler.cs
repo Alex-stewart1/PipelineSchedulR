@@ -67,6 +67,33 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
     {
         try
         {
+            if (executable.ShouldPreventExecutionOverlap)
+            {
+                if (_mutex.TryAcquire(executable.ExecutableId))
+                {
+                    try
+                    {
+                        await ExecuteAsync();
+                    }
+                    finally
+                    {
+                        _mutex.Release(executable.ExecutableId);
+                    }
+                }
+            }
+            else
+            {
+                await ExecuteAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "An error occurred while executing the scheduled executable.");
+        }
+
+
+        Task ExecuteAsync()
+        {
             if (_logger?.IsEnabled(LogLevel.Debug) ?? false)
             {
                 _logger.LogDebug("Executing {Executable}.", executable.ToString());
@@ -74,11 +101,7 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
 
             executable.ExecutedAt(now);
 
-            await executable.ExecuteAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, "An error occurred while executing the scheduled executable.");
+            return executable.ExecuteAsync(cancellationToken);
         }
     }
     /// <summary>
