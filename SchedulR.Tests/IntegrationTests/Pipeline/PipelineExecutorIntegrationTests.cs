@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SchedulR.Common.Registration;
 using SchedulR.Pipeline;
-using SchedulR.Tests.Stubs.Pipeline;
+using SchedulR.Tests.Mocks.Executable;
+using SchedulR.Tests.Mocks.Pipeline;
 
 namespace SchedulR.Tests.IntegrationTests.Pipeline;
 
@@ -11,22 +12,22 @@ public class PipelineExecutorIntegrationTests
     public async Task ExecuteAsync_WhenCalled_ShouldReturnExecutableResult()
     {
         // Arrange
-        var executableStub = new ExecutableStub1();
-        var pipelineStub = new PipelineStub1();
+        var executableMock = new ExecutableMock1();
+        var pipelineMock = new PipelineMock1();
 
         var serviceProvider = new ServiceCollection()
-            .AddScoped(provider => executableStub)
-            .AddScoped(provider => pipelineStub)
+            .AddScoped(provider => executableMock)
+            .AddScoped(provider => pipelineMock)
             .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
-                    .Executable<ExecutableStub1>()
-                    .WithPipeline<PipelineStub1>();
+                    .Executable<ExecutableMock1>()
+                    .WithPipeline<PipelineMock1>();
             })
             .BuildServiceProvider();
 
         // Act
-        var result = await PipelineExecutor.ExecuteAsync(typeof(ExecutableStub1), serviceProvider, CancellationToken.None);
+        var result = await PipelineExecutor.ExecuteAsync(typeof(ExecutableMock1), serviceProvider, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -35,47 +36,47 @@ public class PipelineExecutorIntegrationTests
     public async Task ExecuteAsync_WhenCalled_ShouldCorrectlyActivatePipeline()
     {
         // Arrange
-        var executableStub = new ExecutableStub1();
-        var pipelineStub = new PipelineStub1();
+        var executableMock = new ExecutableMock1();
+        var pipelineMock = new PipelineMock1();
 
         var serviceProvider = new ServiceCollection()
-            .AddScoped(provider => executableStub)
-            .AddScoped(provider => pipelineStub)
+            .AddScoped(provider => executableMock)
+            .AddScoped(provider => pipelineMock)
             .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
-                    .Executable<ExecutableStub1>()
-                    .WithPipeline<PipelineStub1>();
+                    .Executable<ExecutableMock1>()
+                    .WithPipeline<PipelineMock1>();
             })
             .BuildServiceProvider();
 
         // Act
-        await PipelineExecutor.ExecuteAsync(typeof(ExecutableStub1), serviceProvider, CancellationToken.None);
+        await PipelineExecutor.ExecuteAsync(typeof(ExecutableMock1), serviceProvider, CancellationToken.None);
 
         // Assert
-        pipelineStub.BeforeExecutionTime.Should().NotBeNull();
-        pipelineStub.AfterExecutionTime.Should().NotBeNull();
-        executableStub.ExecutionTimes.Should().HaveCount(1);
-        pipelineStub.BeforeExecutionTime.Should().BeBefore(executableStub.ExecutionTimes[0]);
-        executableStub.ExecutionTimes[0].Should().BeBefore(pipelineStub.AfterExecutionTime!.Value);
+        pipelineMock.BeforeExecutionTime.Should().NotBeNull();
+        pipelineMock.AfterExecutionTime.Should().NotBeNull();
+        executableMock.ExecutionTimes.Should().HaveCount(1);
+        pipelineMock.BeforeExecutionTime.Should().BeBefore(executableMock.ExecutionTimes[0]);
+        executableMock.ExecutionTimes[0].Should().BeBefore(pipelineMock.AfterExecutionTime!.Value);
     }
     [Fact]
     public async Task ExecuteAsync_WhenCalledWithNoPipeline_ShouldReturnExecutableResult()
     {
         // Arrange
-        var executableStub = new ExecutableStub1();
+        var executableMock = new ExecutableMock1();
 
         var serviceProvider = new ServiceCollection()
-            .AddScoped(provider => executableStub)
+            .AddScoped(provider => executableMock)
             .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
-                    .Executable<ExecutableStub1>();
+                    .Executable<ExecutableMock1>();
             })
             .BuildServiceProvider();
 
         // Act
-        var result = await PipelineExecutor.ExecuteAsync(typeof(ExecutableStub1), serviceProvider, CancellationToken.None);
+        var result = await PipelineExecutor.ExecuteAsync(typeof(ExecutableMock1), serviceProvider, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -84,102 +85,102 @@ public class PipelineExecutorIntegrationTests
     public async Task ExecuteAsync_WhenCalledWithMultiplePipelines_ShouldCorrectlyActivatePipelines()
     {
         // Arrange
-        var executableStub = new ExecutableStub1();
-        var pipelineStub1 = new PipelineStub1();
-        var pipelineStub2 = new PipelineStub2();
-        var pipelineStub3 = new PipelineStub3();
+        var executableMock = new ExecutableMock1();
+        var pipelineMock1 = new PipelineMock1();
+        var pipelineMock2 = new PipelineMock2();
+        var pipelineMock3 = new PipelineMock3();
 
         var serviceProvider = new ServiceCollection()
-            .AddScoped(provider => executableStub)
-            .AddScoped(provider => pipelineStub1)
-            .AddScoped(provider => pipelineStub2)
-            .AddScoped(provider => pipelineStub3)
+            .AddScoped(provider => executableMock)
+            .AddScoped(provider => pipelineMock1)
+            .AddScoped(provider => pipelineMock2)
+            .AddScoped(provider => pipelineMock3)
             .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
-                    .Executable<ExecutableStub1>()
-                    .WithPipeline<PipelineStub1>()
-                    .WithPipeline<PipelineStub2>()
-                    .WithPipeline<PipelineStub3>();
+                    .Executable<ExecutableMock1>()
+                    .WithPipeline<PipelineMock1>()
+                    .WithPipeline<PipelineMock2>()
+                    .WithPipeline<PipelineMock3>();
             })
             .BuildServiceProvider();
 
         // Act
-        var result = await PipelineExecutor.ExecuteAsync(typeof(ExecutableStub1), serviceProvider, CancellationToken.None);
+        var result = await PipelineExecutor.ExecuteAsync(typeof(ExecutableMock1), serviceProvider, CancellationToken.None);
 
         // Assert
 
         // Executable
         result.IsSuccess.Should().BeTrue();
-        executableStub.ExecutionTimes.Should().HaveCount(1);
+        executableMock.ExecutionTimes.Should().HaveCount(1);
 
         // Pipeline 3
-        pipelineStub3.BeforeExecutionTime.Should().NotBeNull();
-        pipelineStub3.AfterExecutionTime.Should().NotBeNull();
-        pipelineStub2.BeforeExecutionTime.Should().BeBefore(executableStub.ExecutionTimes[0]);
-        pipelineStub2.AfterExecutionTime.Should().BeAfter(executableStub.ExecutionTimes[0]);
+        pipelineMock3.BeforeExecutionTime.Should().NotBeNull();
+        pipelineMock3.AfterExecutionTime.Should().NotBeNull();
+        pipelineMock2.BeforeExecutionTime.Should().BeBefore(executableMock.ExecutionTimes[0]);
+        pipelineMock2.AfterExecutionTime.Should().BeAfter(executableMock.ExecutionTimes[0]);
 
         // Pipeline 2
-        pipelineStub3.BeforeExecutionTime.Should().NotBeNull();
-        pipelineStub3.AfterExecutionTime.Should().NotBeNull();
-        pipelineStub2.BeforeExecutionTime.Should().BeBefore(pipelineStub3.BeforeExecutionTime!.Value);
-        pipelineStub2.AfterExecutionTime.Should().BeAfter(pipelineStub3.AfterExecutionTime!.Value);
+        pipelineMock3.BeforeExecutionTime.Should().NotBeNull();
+        pipelineMock3.AfterExecutionTime.Should().NotBeNull();
+        pipelineMock2.BeforeExecutionTime.Should().BeBefore(pipelineMock3.BeforeExecutionTime!.Value);
+        pipelineMock2.AfterExecutionTime.Should().BeAfter(pipelineMock3.AfterExecutionTime!.Value);
 
         // Pipeline 1
-        pipelineStub1.BeforeExecutionTime.Should().NotBeNull();
-        pipelineStub1.AfterExecutionTime.Should().NotBeNull();
-        pipelineStub1.BeforeExecutionTime.Should().BeBefore(pipelineStub2.BeforeExecutionTime!.Value);
-        pipelineStub1.AfterExecutionTime.Should().BeAfter(pipelineStub2.AfterExecutionTime!.Value);
+        pipelineMock1.BeforeExecutionTime.Should().NotBeNull();
+        pipelineMock1.AfterExecutionTime.Should().NotBeNull();
+        pipelineMock1.BeforeExecutionTime.Should().BeBefore(pipelineMock2.BeforeExecutionTime!.Value);
+        pipelineMock1.AfterExecutionTime.Should().BeAfter(pipelineMock2.AfterExecutionTime!.Value);
     }
     [Fact]
     public async Task ExecuteAsync_WhenCalledWithMultipleRegisteredExecutables_ShouldActivateTheCorrectExecutablePipeline()
     {
         // Arrange
-        var executableStub1 = new ExecutableStub1();
-        var pipelineStub1 = new PipelineStub1();
+        var executableMock1 = new ExecutableMock1();
+        var pipelineMock1 = new PipelineMock1();
 
-        var executableStub2 = new ExecutableStub2();
-        var pipelineStub2 = new PipelineStub2();
-        var pipelineStub3 = new PipelineStub3();
+        var executableMock2 = new ExecutableMock2();
+        var pipelineMock2 = new PipelineMock2();
+        var pipelineMock3 = new PipelineMock3();
 
         var serviceProvider = new ServiceCollection()
-            .AddScoped(provider => executableStub1)
-            .AddScoped(provider => pipelineStub1)
-            .AddScoped(provider => executableStub2)
-            .AddScoped(provider => pipelineStub2)
-            .AddScoped(provider => pipelineStub3)
+            .AddScoped(provider => executableMock1)
+            .AddScoped(provider => pipelineMock1)
+            .AddScoped(provider => executableMock2)
+            .AddScoped(provider => pipelineMock2)
+            .AddScoped(provider => pipelineMock3)
             .AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
-                    .Executable<ExecutableStub1>()
-                    .WithPipeline<PipelineStub1>();
+                    .Executable<ExecutableMock1>()
+                    .WithPipeline<PipelineMock1>();
 
                 pipelineBuilder
-                    .Executable<ExecutableStub2>()
-                    .WithPipeline<PipelineStub2>()
-                    .WithPipeline<PipelineStub3>();
+                    .Executable<ExecutableMock2>()
+                    .WithPipeline<PipelineMock2>()
+                    .WithPipeline<PipelineMock3>();
             })
             .BuildServiceProvider();
 
         // Act & Assert
-        await PipelineExecutor.ExecuteAsync(typeof(ExecutableStub1), serviceProvider, CancellationToken.None);
+        await PipelineExecutor.ExecuteAsync(typeof(ExecutableMock1), serviceProvider, CancellationToken.None);
 
-        executableStub1.ExecutionTimes.Should().HaveCount(1);
-        pipelineStub1.BeforeExecutionTime.Should().NotBeNull();
-        pipelineStub1.AfterExecutionTime.Should().NotBeNull();
+        executableMock1.ExecutionTimes.Should().HaveCount(1);
+        pipelineMock1.BeforeExecutionTime.Should().NotBeNull();
+        pipelineMock1.AfterExecutionTime.Should().NotBeNull();
 
-        executableStub2.ExecutionTimes.Should().BeEmpty();
-        pipelineStub2.BeforeExecutionTime.Should().BeNull();
-        pipelineStub2.AfterExecutionTime.Should().BeNull();
-        pipelineStub3.BeforeExecutionTime.Should().BeNull();
-        pipelineStub3.AfterExecutionTime.Should().BeNull();
+        executableMock2.ExecutionTimes.Should().BeEmpty();
+        pipelineMock2.BeforeExecutionTime.Should().BeNull();
+        pipelineMock2.AfterExecutionTime.Should().BeNull();
+        pipelineMock3.BeforeExecutionTime.Should().BeNull();
+        pipelineMock3.AfterExecutionTime.Should().BeNull();
 
-        await PipelineExecutor.ExecuteAsync(typeof(ExecutableStub2), serviceProvider, CancellationToken.None);
+        await PipelineExecutor.ExecuteAsync(typeof(ExecutableMock2), serviceProvider, CancellationToken.None);
 
-        executableStub2.ExecutionTimes.Should().HaveCount(1);
-        pipelineStub2.BeforeExecutionTime.Should().NotBeNull();
-        pipelineStub2.AfterExecutionTime.Should().NotBeNull();
-        pipelineStub3.BeforeExecutionTime.Should().NotBeNull();
-        pipelineStub3.AfterExecutionTime.Should().NotBeNull();
+        executableMock2.ExecutionTimes.Should().HaveCount(1);
+        pipelineMock2.BeforeExecutionTime.Should().NotBeNull();
+        pipelineMock2.AfterExecutionTime.Should().NotBeNull();
+        pipelineMock3.BeforeExecutionTime.Should().NotBeNull();
+        pipelineMock3.AfterExecutionTime.Should().NotBeNull();
     }
 }

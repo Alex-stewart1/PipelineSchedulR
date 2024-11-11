@@ -30,10 +30,10 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
     #endregion
 
     #region Events
-    public event EventHandler? StartRequested = null;
+    internal event EventHandler? StartRequested = null;
     #endregion
 
-    public Task RunJobsDueAtAsync(DateTimeOffset now, CancellationToken cancellationToken)
+    internal Task RunJobsDueAtAsync(DateTimeOffset now, CancellationToken cancellationToken)
     {
         List<ScheduledExecutable>? dueExecutables = null;
 
@@ -86,6 +86,7 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
                 await ExecuteAsync();
             }
         }
+        catch (OperationCanceledException) { } // Ignore
         catch (Exception ex)
         {
             _logger?.LogError(ex, "An error occurred while executing the scheduled executable.");

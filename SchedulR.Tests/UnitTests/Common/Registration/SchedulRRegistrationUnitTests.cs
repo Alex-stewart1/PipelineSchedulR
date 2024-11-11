@@ -2,7 +2,8 @@
 using SchedulR.Common.Helpers;
 using SchedulR.Common.Registration;
 using SchedulR.Interfaces;
-using SchedulR.Tests.Stubs.Pipeline;
+using SchedulR.Tests.Mocks.Executable;
+using SchedulR.Tests.Mocks.Pipeline;
 
 namespace SchedulR.Tests.UnitTests.Common.Registration;
 
@@ -20,11 +21,11 @@ public class SchedulRRegistrationUnitTests
             services.AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
-                     .Executable<ExecutableStub1>();
+                     .Executable<ExecutableMock1>();
             });
 
             // Assert
-            var serviceDescriptor = services.FirstOrDefault(x => (string?)x.ServiceKey == KeyedServiceHelper.GetExecutableKey(typeof(ExecutableStub1)) &&
+            var serviceDescriptor = services.FirstOrDefault(x => (string?)x.ServiceKey == KeyedServiceHelper.GetExecutableKey(typeof(ExecutableMock1)) &&
                                                                           x.ServiceType == typeof(IExecutable));
 
             serviceDescriptor.Should().NotBeNull();
@@ -39,15 +40,15 @@ public class SchedulRRegistrationUnitTests
             services.AddSchedulR((pipelineBuilder, _) =>
             {
                 pipelineBuilder
-                     .Executable<ExecutableStub1>()
-                     .WithPipeline<PipelineStub1>();
+                     .Executable<ExecutableMock1>()
+                     .WithPipeline<PipelineMock1>();
             });
 
             // Assert
-            var executableServiceDescriptor = services.FirstOrDefault(x => (string?)x.ServiceKey == KeyedServiceHelper.GetExecutableKey(typeof(ExecutableStub1)) &&
+            var executableServiceDescriptor = services.FirstOrDefault(x => (string?)x.ServiceKey == KeyedServiceHelper.GetExecutableKey(typeof(ExecutableMock1)) &&
                                                                                     x.ServiceType == typeof(IExecutable));
 
-            var pipelineServiceDescriptor = services.FirstOrDefault(x => (string?)x.ServiceKey == KeyedServiceHelper.GetExecutableKey(typeof(ExecutableStub1)) &&
+            var pipelineServiceDescriptor = services.FirstOrDefault(x => (string?)x.ServiceKey == KeyedServiceHelper.GetExecutableKey(typeof(ExecutableMock1)) &&
                                                                                   x.ServiceType == typeof(IPipeline));
 
             executableServiceDescriptor.Should().NotBeNull();

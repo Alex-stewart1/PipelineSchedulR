@@ -1,8 +1,8 @@
 ﻿using SchedulR.Common.Types;
 using SchedulR.Interfaces;
 
-namespace SchedulR.Tests.Stubs.Pipeline;
-internal class BasePipelineStub : IPipeline
+namespace SchedulR.Tests.Mocks.Pipeline;
+internal class BasePipelineMock : IPipeline
 {
     public DateTimeOffset? BeforeExecutionTime { get; private set; } = null;
     public DateTimeOffset? AfterExecutionTime { get; private set; } = null;
@@ -17,6 +17,6 @@ internal class BasePipelineStub : IPipeline
         return result;
     }
 }
-internal class PipelineStub1 : BasePipelineStub { }
-internal class PipelineStub2 : BasePipelineStub { }
-internal class PipelineStub3 : BasePipelineStub { }
+internal class PipelineMock1 : BasePipelineMock { }
+internal class PipelineMock2 : BasePipelineMock { }
+internal class PipelineMock3 : BasePipelineMock { }

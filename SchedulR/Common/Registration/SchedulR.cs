@@ -17,9 +17,11 @@ internal static class SchedulRRegistrationExtensions
 
         configure(builder, options);
 
+        services.AddHostedService<SchedulerHost>();
         services.AddSingleton(provider => new Scheduler(provider.GetRequiredService<IServiceScopeFactory>(),
                                                         options,
                                                         provider.GetService<ILogger<Scheduler>>()));
+
 
         return services;
     }
