@@ -28,7 +28,6 @@ We’re grateful to the Coravel community for paving the way for low-configurati
 - [Examples](#examples)
 - [Contributing](#contributing)
 - [License](#license)
-- [Future work](#future work)
 
 ## Installation
 
