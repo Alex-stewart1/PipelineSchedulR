@@ -24,6 +24,7 @@ You can install SchedulR via NuGet:
 
 ```bash
 dotnet add package SchedulR
+```
 
 ## Examples
 
