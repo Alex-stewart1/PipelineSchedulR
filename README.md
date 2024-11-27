@@ -52,8 +52,9 @@ var host = Host.CreateDefaultBuilder(args)
 
 host.Services.UseSchedulR(scheduler =>
 {
-    scheduler.Schedule<HelloWorldJob>()
-             .EveryMinutes(1);
+    scheduler
+        .Schedule<HelloWorldJob>()
+        .EveryMinutes(1);
 });
 
 
