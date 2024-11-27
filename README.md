@@ -28,6 +28,7 @@ We’re grateful to the Coravel community for paving the way for low-configurati
 - [Examples](#examples)
 - [Contributing](#contributing)
 - [License](#license)
+- [Future work](#future work)
 
 ## Installation
 
@@ -105,6 +106,15 @@ class LoggingPipeline : IPipeline
 4. **Add a Pipeline**: The `LoggingPipeline` class demonstrates a custom pipeline that logs execution details before and after running the job.
 
 For more examples and advanced usage, check out our [documentation](#).
+
+## Future Work
+
+We are actively working on enhancing SchedulR with new features to make it even more versatile. One of the key features in development is:
+
+- **Job Persistence**: An implementation for job persistence using a local JSON file is on the way. This will allow scheduled jobs and their configurations to be saved and restored across application restarts, providing greater flexibility and reliability for long-running applications.
+
+Stay tuned for updates!
+
 
 
 
