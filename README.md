@@ -10,6 +10,17 @@ Features
 - **Low Configuration**: With SchedulR, you can avoid the boilerplate and complexity found in other scheduling libraries, allowing you to focus on your application logic.
 - **Flexible and Extensible**: Easily extend and modify task pipelines to fit your specific use cases, without sacrificing simplicity.
 
+## Inspiration
+
+SchedulR is inspired by the fantastic [Coravel](https://github.com/jamesmh/coravel) package, which provides fluent registration and task scheduling with minimal configuration. While SchedulR takes cues from Coravel's elegant design, it introduces several new concepts:
+
+- **Pipelines**: Allow actions to be taken based on the result of a job, such as short-circuiting or handling specific outcomes.
+- **Fully Async**: The package is designed to fully support asynchronous operations for modern .NET applications.
+- **Configurable Lifecycle**: Unlike Coravel, SchedulR allows the scheduler to be started and stopped dynamically, rather than being permanently tied to the underlying `IHostApplicationLifetime`.
+
+We’re grateful to the Coravel community for paving the way for low-configuration task scheduling in .NET and aim to expand on these ideas with additional flexibility and features.
+
+
 ## Table of Contents
 
 - [Installation](#installation)
