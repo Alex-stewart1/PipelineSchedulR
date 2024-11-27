@@ -8,7 +8,7 @@ using SchedulR.Scheduling.Interfaces;
 
 namespace SchedulR.Common.Registration;
 
-internal static class SchedulRRegistrationExtensions
+public static class SchedulRRegistrationExtensions
 {
     public static IServiceCollection AddSchedulR(this IServiceCollection services, Action<IPipelineBuilder, SchedulerOptions> configure)
     {
