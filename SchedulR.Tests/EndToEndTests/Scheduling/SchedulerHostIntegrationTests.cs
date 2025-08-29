@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using SchedulR.Common.Registration;
 using SchedulR.Tests.Mocks.Executable;
+using SchedulR.Tests.Mocks.Pipeline;
 
 namespace SchedulR.Tests.EndToEndTests.Scheduling;
 
@@ -23,7 +24,8 @@ public class SchedulerHostIntegrationTests
                     {
                         options.AutoStart = true;
                         pipelineBuilder
-                            .Executable<ExecutableMock1>();
+                            .Executable<ExecutableMock1>()
+                            .WithPipeline<PipelineMock1>();
                     });
             })
             .Build();
