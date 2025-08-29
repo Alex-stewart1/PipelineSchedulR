@@ -2,6 +2,7 @@
 using NSubstitute;
 using SchedulR.Scheduling;
 using SchedulR.Scheduling.Configuration;
+using SchedulR.Tests.Mocks.Executable;
 
 namespace SchedulR.Tests.UnitTests.Scheduling;
 
@@ -124,4 +125,65 @@ public class SchedulerUnitTests
         }
     }
 
+    public class Schedule
+    {
+        [Fact]
+        public void Schedule_NewJob_ShouldSuccessfullyAddJob()
+        {
+            // Arrange
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            
+            // Act
+            scheduler.Schedule<ExecutableMock1>();
+            
+            // Assert
+            scheduler.ScheduledJobs.Should().HaveCount(1);
+        }
+        
+        [Fact]
+        public void Schedule_DuplicateJob_ShouldThrow()
+        {
+            // Arrange
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            scheduler.Schedule<ExecutableMock1>();
+            
+            // Act
+            var act = () => scheduler.Schedule<ExecutableMock1>();
+            
+            // Assert
+            act.Should().Throw<InvalidOperationException>();
+            scheduler.ScheduledJobs.Should().HaveCount(1);
+        }
+    }
+
+    public class Deschedule
+    {
+        [Fact]
+        public void Deschedule_ExistingJob_ShouldSuccessfullyRemoveJob()
+        {
+            // Arrange
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            scheduler.Schedule<ExecutableMock1>();
+            
+            // Act
+            scheduler.Deschedule<ExecutableMock1>();
+            
+            // Assert
+            scheduler.ScheduledJobs.Should().HaveCount(0);
+        }
+        
+        [Fact]
+        public void Deschedule_NonExistingJob_ShouldNotThrow()
+        {
+            // Arrange
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            
+            // Act
+            var act = () => scheduler.Deschedule<ExecutableMock1>();
+            
+            // Assert
+            act.Should().NotThrow();
+            scheduler.ScheduledJobs.Should().HaveCount(0);
+        }
+    }
 }

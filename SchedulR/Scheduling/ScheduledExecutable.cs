@@ -6,11 +6,11 @@ using SchedulR.Scheduling.Interfaces;
 
 namespace SchedulR.Scheduling;
 
-internal class ScheduledExecutable(Type executableType, IServiceScopeFactory serviceScopeFactory) : IScheduleInterval, IScheduleExecutableConfiguration
+internal class ScheduledExecutable(string executableId, Type executableType, IServiceScopeFactory serviceScopeFactory) : IScheduleInterval, IScheduleExecutableConfiguration
 {
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
     private readonly Type _executableType = executableType;
-    private readonly string _executableId = Guid.NewGuid().ToString();
+    private readonly string _executableId = executableId;
     private long _tickInterval;
     private DateTimeOffset _nextExecutionTime = DateTimeOffset.MaxValue;
     private bool _runOnStart = false;

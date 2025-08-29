@@ -5,6 +5,7 @@ using SchedulR.Scheduling.Configuration;
 using SchedulR.Scheduling.Interfaces;
 using SchedulR.Scheduling.Mutex;
 using System.Collections.Concurrent;
+using SchedulR.Scheduling.Helpers;
 
 namespace SchedulR.Scheduling;
 
@@ -20,6 +21,7 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
     #region Properties
     public bool AutoStart { get; } = options.AutoStart;
     public bool HasStarted => _hasStarted;
+    public IEnumerable<string> ScheduledJobs => _scheduledJobs.Keys;
     #endregion
 
     #region Dependencies
@@ -46,7 +48,7 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
 
                 dueExecutables.Add(executable);
             }
-        }
+        }    
 
         // No due executables
         if (dueExecutables is null)
@@ -136,9 +138,18 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
     }
     public IScheduleInterval Schedule<TExecutable>() where TExecutable : IExecutable
     {
-        var executable = new ScheduledExecutable(typeof(TExecutable), _serviceScopeFactory);
-        _scheduledJobs.TryAdd(executable.ExecutableId, executable);
+        var executableId = ScheduledExecutableHelper.GetExecutableId<TExecutable>();
+        var executable = new ScheduledExecutable(executableId, typeof(TExecutable), _serviceScopeFactory);
+        if (!_scheduledJobs.TryAdd(executable.ExecutableId, executable))
+        {
+            throw new InvalidOperationException($"An executable with the id {executableId} has already been scheduled.");       
+        }
         return executable;
     }
-
+    
+    public void Deschedule<TExecutable>() where TExecutable : IExecutable
+    {
+        var executableId = ScheduledExecutableHelper.GetExecutableId<TExecutable>();
+        _scheduledJobs.TryRemove(executableId, out _);
+    }
 }

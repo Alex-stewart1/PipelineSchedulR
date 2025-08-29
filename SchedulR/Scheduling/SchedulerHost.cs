@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using SchedulR.Scheduling.Helpers;
 
 namespace SchedulR.Scheduling;
 
@@ -48,7 +49,7 @@ internal class SchedulerHost(
     }
     private void SchedulerStartRequested(object? sender, EventArgs e)
     {
-        _timer = new Timer(RunSchedulerTick, state: null, dueTime: TimeSpan.Zero, TimeSpan.FromSeconds(10));
+        _timer = new Timer(RunSchedulerTick, state: null, dueTime: TimeSpan.Zero, TimeSpan.FromSeconds(TickIntervalHelper.SecondsPerTick));
 
         _scheduler.StartRequested -= SchedulerStartRequested;
     }

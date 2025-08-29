@@ -11,9 +11,9 @@ internal class BaseExecutableMock : IExecutable
     {
         try
         {
-            await Task.Delay(100, cancellationToken); // Simulate some work
-
             ExecutionTimes.Add(DateTimeOffset.UtcNow);
+
+            await Task.Delay(100, cancellationToken); // Simulate some work
         }
         catch (OperationCanceledException)
         {
