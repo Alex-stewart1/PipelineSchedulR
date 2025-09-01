@@ -217,7 +217,6 @@ public class SchedulerIntegrationTests
             cancellationTokenSource.Cancel();
         }
     }
-
     [Fact]
     public async Task RunJobsDueAtAsync_JobRunningDoesNotHavePreventOverlap_ShouldExecuteJobMultipleTimes()
     {
@@ -299,4 +298,42 @@ public class SchedulerIntegrationTests
         // Assert
         executableMock.CancellationWasRequested.Should().BeTrue();
     }
+    [Fact]
+    public async Task RunJobsDueAtAsync_RunAfterDelay_ShouldNotExecuteJobBeforeSpecifiedDelay()
+    {
+        // Arrange
+        var executableMock = new ExecutableMock1();
+
+        var serviceProvider = new ServiceCollection()
+            .AddScoped(provider => executableMock)
+            .AddSchedulR((pipelineBuilder, _) =>
+            {
+                pipelineBuilder
+                    .Executable<ExecutableMock1>();
+            })
+            .BuildServiceProvider()
+            .UseSchedulR(scheduler =>
+            {
+                scheduler
+                    .Schedule<ExecutableMock1>()
+                    .EveryMinutes(1)
+                    .RunAfterDelay(TimeSpan.FromMinutes(1));
+            });
+
+        var now = DateTimeOffset.UtcNow;
+
+        var scheduler = serviceProvider.GetRequiredService<Scheduler>();
+
+        scheduler.StartAt(now);
+
+        // Act & Assert
+        await scheduler.RunJobsDueAtAsync(now.AddMinutes(1), CancellationToken.None);
+
+        executableMock.ExecutionTimes.Count.Should().Be(0);
+        
+        await scheduler.RunJobsDueAtAsync(now.AddMinutes(2), CancellationToken.None);
+        
+        executableMock.ExecutionTimes.Count.Should().Be(1);
+    }
+    
 }

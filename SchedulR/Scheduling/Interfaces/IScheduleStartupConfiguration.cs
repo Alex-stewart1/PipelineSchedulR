@@ -1,15 +1,18 @@
 ﻿namespace SchedulR.Scheduling.Interfaces;
 
-public interface IScheduleExecutableConfiguration
+public interface IScheduleStartupConfiguration
 {
     /// <summary>
     /// Schedule the executable to run when the scheduler is started rather than waiting for its first scheduled time.
     /// </summary>
     /// <returns></returns>
     IScheduleExecutableConfiguration RunOnStart();
+    
+    
     /// <summary>
-    /// Prevent the executable from running if it's previous exectution is still running.
+    /// Schedule the executable to run after the specified delay once the scheduler has started
     /// </summary>
+    /// <param name="delay"></param>
     /// <returns></returns>
-    IScheduleExecutableConfiguration PreventExecutionOverlap();
+    IScheduleExecutableConfiguration RunAfterDelay(TimeSpan delay);
 }

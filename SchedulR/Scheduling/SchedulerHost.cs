@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Hosting;
 using SchedulR.Scheduling.Helpers;
 
 namespace SchedulR.Scheduling;
@@ -56,10 +57,21 @@ internal class SchedulerHost(
 
     private async void RunSchedulerTick(object? state)
     {
-        if (_shouldRun)
+        try
         {
-            await _scheduler.RunJobsDueAtAsync(_timeProvider.GetUtcNow(), _cancellationTokenSource.Token);
+            if (_shouldRun)
+            {
+                await _scheduler.RunJobsDueAtAsync(_timeProvider.GetUtcNow(), _cancellationTokenSource.Token);
+            }
         }
+        catch (OperationCanceledException)
+        {
+        } // Ignore
+        catch (Exception ex)
+        {
+            Debugger.Break();
+        }
+        
     }
 
     public void Dispose()

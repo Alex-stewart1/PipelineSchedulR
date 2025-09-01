@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using SchedulR.Common.Registration;
 using SchedulR.Tests.Mocks.Executable;
-using SchedulR.Tests.Mocks.Pipeline;
 
 namespace SchedulR.Tests.EndToEndTests.Scheduling;
 
@@ -24,8 +23,7 @@ public class SchedulerHostIntegrationTests
                     {
                         options.AutoStart = true;
                         pipelineBuilder
-                            .Executable<ExecutableMock1>()
-                            .WithPipeline<PipelineMock1>();
+                            .Executable<ExecutableMock1>();
                     });
             })
             .Build();
@@ -40,7 +38,7 @@ public class SchedulerHostIntegrationTests
             });
         
         // Act
-        _ = host.StartAsync();
+        _ = host.RunAsync();
         
         // TODO: Properly allow for the Timer in the SchedulerHost to be mocked in some way
         // this will prevent the test from needing to wait for the timer to trigger

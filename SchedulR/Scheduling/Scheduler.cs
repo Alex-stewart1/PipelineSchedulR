@@ -5,6 +5,7 @@ using SchedulR.Scheduling.Configuration;
 using SchedulR.Scheduling.Interfaces;
 using SchedulR.Scheduling.Mutex;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using SchedulR.Scheduling.Helpers;
 
 namespace SchedulR.Scheduling;
@@ -92,6 +93,8 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
         catch (Exception ex)
         {
             _logger?.LogError(ex, "An error occurred while executing the scheduled executable.");
+            
+            Debugger.Break();
         }
 
 
@@ -130,7 +133,7 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
 
             foreach (var executable in _scheduledJobs.Values)
             {
-                executable.InitializeNextExecutionTime(now);
+                executable.InitializeFirstExecutionTime(now);
             }
 
             StartRequested?.Invoke(this, EventArgs.Empty);

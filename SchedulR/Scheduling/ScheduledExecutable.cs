@@ -6,12 +6,13 @@ using SchedulR.Scheduling.Interfaces;
 
 namespace SchedulR.Scheduling;
 
-internal class ScheduledExecutable(string executableId, Type executableType, IServiceScopeFactory serviceScopeFactory) : IScheduleInterval, IScheduleExecutableConfiguration
+internal class ScheduledExecutable(string executableId, Type executableType, IServiceScopeFactory serviceScopeFactory) : IScheduleInterval, IScheduleStartupConfiguration, IScheduleExecutableConfiguration
 {
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
     private readonly Type _executableType = executableType;
     private readonly string _executableId = executableId;
     private long _tickInterval;
+    private long _runAfterTicks = 0;
     private DateTimeOffset _nextExecutionTime = DateTimeOffset.MaxValue;
     private bool _runOnStart = false;
     private bool _preventExecutionOverlap = false;
@@ -32,7 +33,7 @@ internal class ScheduledExecutable(string executableId, Type executableType, ISe
     {
         _nextExecutionTime = now.AddSeconds(TickIntervalHelper.TicksToSeconds(_tickInterval)).PreciseUpToSecond();
     }
-    public void InitializeNextExecutionTime(DateTimeOffset now)
+    public void InitializeFirstExecutionTime(DateTimeOffset now)
     {
         if (_runOnStart)
         {
@@ -40,18 +41,38 @@ internal class ScheduledExecutable(string executableId, Type executableType, ISe
         }
         else
         {
-            ExecutedAt(now);
+            _nextExecutionTime = now
+                .AddSeconds(TickIntervalHelper.TicksToSeconds(_tickInterval + _runAfterTicks))
+                .PreciseUpToSecond();
         }
     }
-    public IScheduleExecutableConfiguration EveryMinutes(long minutes)
+    public IScheduleStartupConfiguration EveryMinutes(long minutes)
     {
         _tickInterval = TickIntervalHelper.MinutesToTicks(minutes);
+        return this;
+    }
+
+    public IScheduleStartupConfiguration EveryHours(long hours)
+    {
+        _tickInterval = TickIntervalHelper.HoursToTicks(hours);
+        return this;
+    }
+
+    public IScheduleStartupConfiguration EveryDays(long days)
+    {
+        _tickInterval = TickIntervalHelper.DaysToTicks(days);
         return this;
     }
 
     public IScheduleExecutableConfiguration RunOnStart()
     {
         _runOnStart = true;
+        return this;
+    }
+
+    public IScheduleExecutableConfiguration RunAfterDelay(TimeSpan delay)
+    {
+        _runAfterTicks = TickIntervalHelper.TimeSpanToTicks(delay);
         return this;
     }
 

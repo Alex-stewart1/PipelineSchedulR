@@ -11,6 +11,7 @@ internal static class PipelineExecutor
     /// Executes the pipeline associated with the executor type.
     /// </summary>
     /// <param name="executorType"></param>
+    /// <param name="provider"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>
     /// Result of the pipeline execution
@@ -33,7 +34,7 @@ internal static class PipelineExecutor
         foreach (var pipeline in pipelines.Reverse())
         {
             PipelineDelegate next = current;
-            current = (ct) => pipeline.ExecuteAsync(next, cancellationToken);
+            current = (ct) => pipeline.ExecuteAsync(next, ct);
         }
 
         return current(cancellationToken);
