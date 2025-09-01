@@ -10,7 +10,7 @@
 		<ProductName>PipelineSchedulR</ProductName>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
 		<PackageDescription>PipelineSchedulR is a lightweight, fluent API for scheduling tasks and building execution pipelines</PackageDescription>
-		<RepositoryUrl>https://github.com/OWNER/REPOSITORY</RepositoryUrl>
+		<RepositoryUrl>https://github.com/Alex-stewart1/PipelineSchedulR</RepositoryUrl>
 	</PropertyGroup>
 
 

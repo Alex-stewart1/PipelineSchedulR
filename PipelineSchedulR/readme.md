@@ -31,7 +31,7 @@ We’re grateful to the Coravel community for paving the way for low-configurati
 
 ## Installation
 
-You can install PipelineSchedulR via NuGet:
+You can install PipelineSchedulR via NuGet: https://www.nuget.org/packages/PipelineSchedulR
 
 ```bash
 dotnet add package PipelineSchedulR
@@ -61,7 +61,7 @@ var host = Host.CreateDefaultBuilder(args)
                })
                .Build();
 
-host.Services.(scheduler =>
+host.Services.UseSchedulR(scheduler =>
 {
     scheduler
         .Schedule<HelloWorldJob>()
