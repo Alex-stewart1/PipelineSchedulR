@@ -25,7 +25,6 @@ We gratefully acknowledge the foundations provided by open-source projects such 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Examples](#examples)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Installation
