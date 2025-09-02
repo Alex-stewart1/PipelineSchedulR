@@ -108,10 +108,6 @@ Planned enhancements include:
 
 Stay tuned for updates as new features are introduced!
 
-## Contributing
-
-We welcome contributions of all kinds. For guidelines, please see the [CONTRIBUTING.md](CONTRIBUTING.md).
-
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for more details.
+This project is licensed under the MIT License.
