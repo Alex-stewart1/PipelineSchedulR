@@ -34,7 +34,7 @@ internal static class PipelineExecutor
         foreach (var pipeline in pipelines.Reverse())
         {
             PipelineDelegate next = current;
-            current = (ct) => pipeline.ExecuteAsync(next, ct);
+            current = (ct) => pipeline.ExecuteAsync(next, executorType, ct);
         }
 
         return current(cancellationToken);

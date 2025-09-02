@@ -61,6 +61,30 @@ public class PipelineExecutorIntegrationTests
         executableMock.ExecutionTimes[0].Should().BeBefore(pipelineMock.AfterExecutionTime!.Value);
     }
     [Fact]
+    public async Task ExecuteAsync_WhenCalled_ShouldPassExecutableTypeToPipeline()
+    {
+        // Arrange
+        var executableMock = new ExecutableMock1();
+        var pipelineMock = new PipelineMock1();
+
+        var serviceProvider = new ServiceCollection()
+            .AddScoped(provider => executableMock)
+            .AddScoped(provider => pipelineMock)
+            .AddSchedulR((pipelineBuilder, _) =>
+            {
+                pipelineBuilder
+                    .Executable<ExecutableMock1>()
+                    .WithPipeline<PipelineMock1>();
+            })
+            .BuildServiceProvider();
+
+        // Act
+        await PipelineExecutor.ExecuteAsync(typeof(ExecutableMock1), serviceProvider, CancellationToken.None);
+        
+        // Assert
+        pipelineMock.ExecutableType.Should().Be<ExecutableMock1>();
+    }
+    [Fact]
     public async Task ExecuteAsync_WhenCalledWithNoPipeline_ShouldReturnExecutableResult()
     {
         // Arrange
@@ -183,4 +207,6 @@ public class PipelineExecutorIntegrationTests
         pipelineMock3.BeforeExecutionTime.Should().NotBeNull();
         pipelineMock3.AfterExecutionTime.Should().NotBeNull();
     }
+    
+    
 }

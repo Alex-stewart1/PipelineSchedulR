@@ -6,5 +6,5 @@ public delegate Task<Result> PipelineDelegate(CancellationToken cancellationToke
 
 public interface IPipeline
 {
-    Task<Result> ExecuteAsync(PipelineDelegate next, CancellationToken cancellationToken);
+    Task<Result> ExecuteAsync(PipelineDelegate next, Type executableType, CancellationToken cancellationToken);
 }

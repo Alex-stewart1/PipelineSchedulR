@@ -6,9 +6,12 @@ internal class BasePipelineMock : IPipeline
 {
     public DateTimeOffset? BeforeExecutionTime { get; private set; } = null;
     public DateTimeOffset? AfterExecutionTime { get; private set; } = null;
-    public async Task<Result> ExecuteAsync(PipelineDelegate next, CancellationToken cancellationToken)
+    public Type? ExecutableType { get; private set; } = null;
+    public async Task<Result> ExecuteAsync(PipelineDelegate next, Type executableType, CancellationToken cancellationToken)
     {
         BeforeExecutionTime = DateTimeOffset.UtcNow;
+        
+        ExecutableType = executableType;
 
         var result = await next(cancellationToken);
 
