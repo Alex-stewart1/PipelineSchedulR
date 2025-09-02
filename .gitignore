@@ -43,6 +43,7 @@ bld/
 
 # Visual Studio 2017 auto generated files
 Generated\ Files/
+*.DotSettings
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
