@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using PipelineSchedulR.Common.Extensions;
 using PipelineSchedulR.Common.Registration;
 using PipelineSchedulR.Scheduling;
 using PipelineSchedulR.Tests.Mocks.Executable;
@@ -299,7 +300,7 @@ public class SchedulerIntegrationTests
         executableMock.CancellationWasRequested.Should().BeTrue();
     }
     [Fact]
-    public async Task RunJobsDueAtAsync_RunAfterDelay_ShouldNotExecuteJobBeforeSpecifiedDelay()
+    public async Task RunJobsDueAtAsync_WithJitter_ShouldNotExecuteJobBeforeSpecifiedDelay()
     {
         // Arrange
         var executableMock = new ExecutableMock1();
@@ -317,7 +318,7 @@ public class SchedulerIntegrationTests
                 scheduler
                     .Schedule<ExecutableMock1>()
                     .EveryMinutes(1)
-                    .RunAfterDelay(TimeSpan.FromMinutes(1));
+                    .WithJitter(TimeSpan.FromMinutes(1));
             });
 
         var now = DateTimeOffset.UtcNow;
@@ -335,5 +336,91 @@ public class SchedulerIntegrationTests
         
         executableMock.ExecutionTimes.Count.Should().Be(1);
     }
+
+    [Fact]
+    public async Task RunJobsDueAtAsync_RunOnStartFalse_ShouldNotExecuteJobAtStartup()
+    {
+        // Arrange
+        var executableMock = new ExecutableMock1();
+        var serviceProvider = new ServiceCollection()
+            .AddScoped(provider => executableMock)
+            .AddSchedulR((pipelineBuilder, _) =>
+            {
+                pipelineBuilder
+                    .Executable<ExecutableMock1>();
+            })
+            .BuildServiceProvider()
+            .UseSchedulR(scheduler =>
+            {
+                scheduler
+                    .Schedule<ExecutableMock1>()
+                    .EveryMinutes(1)
+                    .RunOnStartIf(() => false);
+            });
+
+        var now = DateTimeOffset.UtcNow;
+
+        var scheduler = serviceProvider.GetRequiredService<Scheduler>();
+        
+        scheduler.StartAt(now);
+
+        // Act & Assert
+        await scheduler.RunJobsDueAtAsync(now, CancellationToken.None); 
+
+        executableMock.ExecutionTimes.Count.Should().Be(0);
+        
+        await scheduler.RunJobsDueAtAsync(now.AddMinutes(1), CancellationToken.None); 
+        
+        executableMock.ExecutionTimes.Count.Should().Be(1);
+    }
     
+    [Fact]
+    public async Task RunJobsDueAtAsync_RunOnStartTrue_WithJitter_JitterShouldBeAppliedOnlyOnceAfterStartup()
+    {
+        // Arrange
+        var executableMock = new ExecutableMock1();
+        var serviceProvider = new ServiceCollection()
+            .AddScoped(provider => executableMock)
+            .AddSchedulR((pipelineBuilder, _) =>
+            {
+                pipelineBuilder
+                    .Executable<ExecutableMock1>();
+            })
+            .BuildServiceProvider()
+            .UseSchedulR(scheduler =>
+            {
+                scheduler
+                    .Schedule<ExecutableMock1>()
+                    .EveryMinutes(1)
+                    .WithJitter(TimeSpan.FromSeconds(30))
+                    .RunOnStartIf(() => true);
+            });
+
+        var now = DateTimeOffset.UtcNow;
+
+        var scheduler = serviceProvider.GetRequiredService<Scheduler>();
+        
+        scheduler.StartAt(now);
+
+        // Act & Assert
+        await scheduler.RunJobsDueAtAsync(now, CancellationToken.None); 
+
+        executableMock.ExecutionTimes.Count.Should().Be(1);
+        
+        await scheduler.RunJobsDueAtAsync(now.AddMinutes(1), CancellationToken.None); 
+        
+        executableMock.ExecutionTimes.Count.Should().Be(1);
+        
+        await scheduler.RunJobsDueAtAsync(now.AddMinutes(1).AddSeconds(30), CancellationToken.None); 
+        
+        executableMock.ExecutionTimes.Count.Should().Be(2);
+        
+        await scheduler.RunJobsDueAtAsync(now.AddMinutes(2), CancellationToken.None); 
+        
+        executableMock.ExecutionTimes.Count.Should().Be(2);
+        
+        await scheduler.RunJobsDueAtAsync(now.AddMinutes(2).AddSeconds(30), CancellationToken.None); 
+        
+        executableMock.ExecutionTimes.Count.Should().Be(3);
+    }
 }

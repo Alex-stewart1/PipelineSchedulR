@@ -6,13 +6,13 @@ using PipelineSchedulR.Scheduling.Interfaces;
 
 namespace PipelineSchedulR.Scheduling;
 
-internal class ScheduledExecutable(string executableId, Type executableType, IServiceScopeFactory serviceScopeFactory) : IScheduleInterval, IScheduleStartupConfiguration, IScheduleExecutableConfiguration
+internal class ScheduledExecutable(string executableId, Type executableType, IServiceScopeFactory serviceScopeFactory) : IScheduleInterval, IScheduleExecutableConfiguration
 {
     private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
     private readonly Type _executableType = executableType;
     private readonly string _executableId = executableId;
     private long _tickInterval;
-    private long _runAfterTicks = 0;
+    private long  _jitterTicks = 0;
     private DateTimeOffset _nextExecutionTime = DateTimeOffset.MaxValue;
     private bool _runOnStart = false;
     private bool _preventExecutionOverlap = false;
@@ -31,7 +31,10 @@ internal class ScheduledExecutable(string executableId, Type executableType, ISe
     }
     public void ExecutedAt(DateTimeOffset now)
     {
-        _nextExecutionTime = now.AddSeconds(TickIntervalHelper.TicksToSeconds(_tickInterval)).PreciseUpToSecond();
+        // If RunOnStart is true, jitter is applied to the second execution
+        _nextExecutionTime = now.AddSeconds(TickIntervalHelper.TicksToSeconds(_tickInterval + _jitterTicks)).PreciseUpToSecond();
+        
+        _jitterTicks = 0;
     }
     public void InitializeFirstExecutionTime(DateTimeOffset now)
     {
@@ -42,37 +45,39 @@ internal class ScheduledExecutable(string executableId, Type executableType, ISe
         else
         {
             _nextExecutionTime = now
-                .AddSeconds(TickIntervalHelper.TicksToSeconds(_tickInterval + _runAfterTicks))
+                .AddSeconds(TickIntervalHelper.TicksToSeconds(_tickInterval + _jitterTicks))
                 .PreciseUpToSecond();
+
+            _jitterTicks = 0;
         }
     }
-    public IScheduleStartupConfiguration EveryMinutes(long minutes)
+    public IScheduleExecutableConfiguration EveryMinutes(long minutes)
     {
         _tickInterval = TickIntervalHelper.MinutesToTicks(minutes);
         return this;
     }
 
-    public IScheduleStartupConfiguration EveryHours(long hours)
+    public IScheduleExecutableConfiguration EveryHours(long hours)
     {
         _tickInterval = TickIntervalHelper.HoursToTicks(hours);
         return this;
     }
 
-    public IScheduleStartupConfiguration EveryDays(long days)
+    public IScheduleExecutableConfiguration EveryDays(long days)
     {
         _tickInterval = TickIntervalHelper.DaysToTicks(days);
         return this;
     }
 
-    public IScheduleExecutableConfiguration RunOnStart()
+    public IScheduleExecutableConfiguration WithJitter(TimeSpan jitter)
     {
-        _runOnStart = true;
+        _jitterTicks = TickIntervalHelper.TimeSpanToTicks(jitter);
         return this;
     }
 
-    public IScheduleExecutableConfiguration RunAfterDelay(TimeSpan delay)
+    public IScheduleExecutableConfiguration RunOnStartIf(Func<bool> predicate)
     {
-        _runAfterTicks = TickIntervalHelper.TimeSpanToTicks(delay);
+        _runOnStart = predicate();
         return this;
     }
 

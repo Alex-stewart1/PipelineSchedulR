@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PipelineSchedulR.Common.Extensions;
 using PipelineSchedulR.Common.Registration;
 using PipelineSchedulR.Tests.Mocks.Executable;
 

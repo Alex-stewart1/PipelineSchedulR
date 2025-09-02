@@ -7,19 +7,22 @@ public interface IScheduleInterval
     /// </summary>
     /// <param name="minutes"></param>
     /// <returns></returns>
-    IScheduleStartupConfiguration EveryMinutes(long minutes);
+    IScheduleExecutableConfiguration EveryMinutes(long minutes);
     
     /// <summary>
     /// Schedule the executable to run every N hours.
     /// </summary>
     /// <param name="hours"></param>
     /// <returns></returns>
-    IScheduleStartupConfiguration EveryHours(long hours);
+    IScheduleExecutableConfiguration EveryHours(long hours);
    
     /// <summary>
     /// Schedule the executable to run every N days.
     /// </summary>
     /// <param name="days"></param>
     /// <returns></returns>
-    IScheduleStartupConfiguration EveryDays(long days);
+    IScheduleExecutableConfiguration EveryDays(long days);
+
+
+    
 }
