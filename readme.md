@@ -1,25 +1,24 @@
 # PipelineSchedulR
 
-PipelineSchedulR is a lightweight, fluent API for scheduling tasks and building execution pipelines. Inspired by the low-configuration approach of Coravel and the structured pipeline design of MediatR, PipelineSchedulR enables developers to configure recurring task pipelines effortlessly, while maintaining a clean and maintainable codebase.
+PipelineSchedulR is a lightweight and extensible API for scheduling recurring tasks and building execution pipelines in modern .NET applications. It offers a fluent configuration approach, enabling developers to set up background jobs and pipelines with minimal boilerplate and maximum clarity.
 
-Features
---------
+## Features
 
-- **Fluent API for Task Scheduling**: Schedule recurring jobs using a simple, readable syntax that requires minimal configuration.
-- **Pipeline Support**: Customize task execution using pipelines, inspired by MediatR, to handle cross-cutting concerns such as logging, validation, and exception handling.
-- **Low Configuration**: With PipelineSchedulR, you can avoid the boilerplate and complexity found in other scheduling libraries, allowing you to focus on your application logic.
-- **Flexible and Extensible**: Easily extend and modify task pipelines to fit your specific use cases, without sacrificing simplicity.
+- **Intuitive Fluent API:** Easily schedule recurring jobs using clear, expressive syntax.
+- **Configurable Execution Pipelines:** Compose pipelines to handle cross-cutting concerns such as logging, validation, and exception handling.
+- **Low Configuration Overhead:** Focus on application logic without the complexities common in other scheduling solutions.
+- **Fully Asynchronous:** Designed for modern .NET, all pipeline and job executions are inherently async-friendly.
+- **Flexible Lifecycle:** Dynamically start or stop scheduling as needed, providing greater control over execution.
+- **Extensible:** Adapt or extend to meet your application's unique requirements.
 
 ## Inspiration
 
-PipelineSchedulR is inspired by the fantastic [Coravel](https://github.com/jamesmh/coravel) package, which provides fluent registration and task scheduling with minimal configuration. While PipelineSchedulR takes cues from Coravel's elegant design, it introduces several new concepts:
+PipelineSchedulR builds on best practices from established libraries, streamlining task scheduling while introducing new concepts:
 
-- **Pipelines**: Allow actions to be taken based on the result of a job, such as short-circuiting or handling specific outcomes.
-- **Fully Async**: The package is designed to fully support asynchronous operations for modern .NET applications.
-- **Configurable Lifecycle**: Unlike Coravel, PipelineSchedulR allows the scheduler to be started and stopped dynamically, rather than being permanently tied to the underlying `IHostApplicationLifetime`.
+- **Composable Pipelines:** Chain actions and custom logic before or after job execution, and even influence execution flow.
+- **Modern & Flexible:** Supports dynamic lifecycle management and async operations throughout.
 
-We’re grateful to the Coravel community for paving the way for low-configuration task scheduling in .NET and aim to expand on these ideas with additional flexibility and features.
-
+We gratefully acknowledge the foundations provided by open-source projects such as [Coravel](https://github.com/jamesmh/coravel), while aiming to push flexibility and extensibility further for diverse .NET scenarios.
 
 ## Table of Contents
 
@@ -31,16 +30,17 @@ We’re grateful to the Coravel community for paving the way for low-configurati
 
 ## Installation
 
-You can install PipelineSchedulR via NuGet: https://www.nuget.org/packages/PipelineSchedulR
+Install via NuGet:
 
 ```bash
 dotnet add package PipelineSchedulR
 ```
 
-## Examples
+## Usage Example
 
-Here’s a quick example to demonstrate how to set up a job and pipeline using PipelineSchedulR:
-```cs
+Below is a basic example illustrating how to set up a job and assign it to a pipeline:
+
+```csharp
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PipelineSchedulR.Common.Registration;
@@ -48,18 +48,18 @@ using PipelineSchedulR.Common.Types;
 using PipelineSchedulR.Interfaces;
 
 var host = Host.CreateDefaultBuilder(args)
-               .ConfigureServices((context, services) =>
-               {
-                   services.AddScoped<HelloWorldJob>()
-                           .AddScoped<LoggingPipeline>()
-                           .AddSchedulR((pipelineBuilder, _) =>
-                           {
-                               pipelineBuilder
-                                    .Executable<HelloWorldJob>()
-                                    .WithPipeline<LoggingPipeline>();
-                           });
-               })
-               .Build();
+    .ConfigureServices((context, services) =>
+    {
+        services.AddScoped<HelloWorldJob>()
+                .AddScoped<LoggingPipeline>()
+                .AddSchedulR((pipelineBuilder, _) =>
+                {
+                    pipelineBuilder
+                        .Executable<HelloWorldJob>()
+                        .WithPipeline<LoggingPipeline>();
+                });
+    })
+    .Build();
 
 host.Services.UseSchedulR(scheduler =>
 {
@@ -68,30 +68,25 @@ host.Services.UseSchedulR(scheduler =>
         .EveryMinutes(1);
 });
 
-
-
+// Implementation of a job
 class HelloWorldJob : IExecutable
 {
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         Console.WriteLine("Hello, world!");
-
-        await Task.Delay(100, cancellationToken); // Simulate work
-
+        await Task.Delay(100, cancellationToken);
         return Result.Success();
     }
 }
 
+// Example pipeline for custom logic
 class LoggingPipeline : IPipeline
 {
     public async Task<Result> ExecuteAsync(PipelineDelegate next, CancellationToken cancellationToken)
     {
         Console.WriteLine("Executing pipeline!");
-
         var result = await next(cancellationToken);
-
         Console.WriteLine("Execution result: {0}", result.IsSuccess);
-
         return result;
     }
 }
@@ -99,24 +94,24 @@ class LoggingPipeline : IPipeline
 
 ### Explanation
 
-1. **Configure Services**: In the `Host.CreateDefaultBuilder`, we configure `HelloWorldJob` and `LoggingPipeline` and register them with the PipelineSchedulR pipeline.
-2. **Schedule a Job**: Use the `UsePipelineSchedulR` method to define when and how frequently `HelloWorldJob` should execute.
-3. **Create a Job**: The `HelloWorldJob` class implements `IExecutable` and contains the task logic.
-4. **Add a Pipeline**: The `LoggingPipeline` class demonstrates a custom pipeline that logs execution details before and after running the job.
+1. **Service Registration:** Register jobs and pipelines using the provided fluent methods.
+2. **Job Scheduling:** Specify frequency and execution conditions through expressive methods.
+3. **Custom Logic:** Implement jobs and pipelines to encapsulate your business logic and cross-cutting concerns.
 
-For more examples and advanced usage, check out our [documentation](#).
+For further examples and advanced scenarios, please refer to the [documentation](#).
 
 ## Future Work
 
-We are actively working on enhancing PipelineSchedulR with new features to make it even more versatile. One of the key features in development is:
+Planned enhancements include:
 
-- **Job Persistence**: An implementation for job persistence using a local JSON file is on the way. This will allow scheduled jobs and their configurations to be saved and restored across application restarts, providing greater flexibility and reliability for long-running applications.
+- **Job Persistence:** Support for persisting job configurations (e.g., to a JSON file), enabling stateful scheduling across application restarts.
 
-Stay tuned for updates!
+Stay tuned for updates as new features are introduced!
 
+## Contributing
 
+We welcome contributions of all kinds. For guidelines, please see the [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## License
 
-
-
-
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for more details.
