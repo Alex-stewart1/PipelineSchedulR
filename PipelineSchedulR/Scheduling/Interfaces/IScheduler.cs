@@ -4,5 +4,5 @@ namespace PipelineSchedulR.Scheduling.Interfaces;
 
 public interface IScheduler
 {
-    IScheduleInterval Schedule<TExecutable>() where TExecutable : IExecutable;
+    IScheduleInterval Schedule<TExecutable>(string? jobId = null) where TExecutable : IExecutable;
 }

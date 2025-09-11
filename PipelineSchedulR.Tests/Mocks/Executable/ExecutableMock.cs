@@ -1,17 +1,21 @@
-﻿using PipelineSchedulR.Common.Types;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using PipelineSchedulR.Common.Types;
 using PipelineSchedulR.Interfaces;
 
 namespace PipelineSchedulR.Tests.Mocks.Executable;
 
 internal class BaseExecutableMock : IExecutable
 {
-    public List<DateTimeOffset> ExecutionTimes { get; } = [];
+    private readonly ConcurrentBag<DateTimeOffset> _executionTimes = [];
+    public IReadOnlyList<DateTimeOffset> ExecutionTimes => _executionTimes.ToList();
     public bool CancellationWasRequested { get; private set; } = false;
     public async Task<Result> ExecuteAsync(CancellationToken cancellationToken)
     {
         try
         {
-            ExecutionTimes.Add(DateTimeOffset.UtcNow);
+            //Debug.WriteLine($"Executing {GetType().Name}");
+            _executionTimes.Add(DateTimeOffset.UtcNow);
 
             await Task.Delay(100, cancellationToken); // Simulate some work
         }

@@ -16,8 +16,10 @@ internal class ScheduledExecutable(string executableId, Type executableType, ISe
     private DateTimeOffset _nextExecutionTime = DateTimeOffset.MaxValue;
     private bool _runOnStart = false;
     private bool _preventExecutionOverlap = false;
+    private bool _initialized = false;
     public string ExecutableId => _executableId;
     public bool ShouldPreventExecutionOverlap => _preventExecutionOverlap;
+    public bool Initialized => _initialized;
 
     public Task<Result> ExecuteAsync(CancellationToken token)
     {
@@ -38,6 +40,13 @@ internal class ScheduledExecutable(string executableId, Type executableType, ISe
     }
     public void InitializeFirstExecutionTime(DateTimeOffset now)
     {
+        if (_initialized)
+        {
+            throw new InvalidOperationException("The executable has already been initialized.");
+        }
+        
+        _initialized = true;
+        
         if (_runOnStart)
         {
             _nextExecutionTime = now.PreciseUpToSecond();

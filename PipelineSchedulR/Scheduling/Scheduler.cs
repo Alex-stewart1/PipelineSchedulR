@@ -16,7 +16,8 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
 {
     #region Fields
     private bool _hasStarted = false;
-    private readonly object _startLock = new();
+    private readonly Lock _startLock = new();
+    private readonly Lock _runJobsLock = new();
     #endregion
 
     #region Properties
@@ -40,33 +41,44 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
     {
         List<ScheduledExecutable>? dueExecutables = null;
 
-        // Get all due executables
-        foreach (var executable in _scheduledJobs.Values)
+        lock (_runJobsLock)
         {
-            if (executable.IsDue(now))
+            // Get all due executables
+            foreach (var executable in _scheduledJobs.Values)
             {
-                dueExecutables ??= [];
+                // Ensures any jobs added after Scheduler.Start() is called are initialized (im not a huge fan of this)
+                if (!executable.Initialized)
+                {
+                    executable.InitializeFirstExecutionTime(now);
+                }
+            
+                if (executable.IsDue(now))
+                {
+                    dueExecutables ??= [];
 
-                dueExecutables.Add(executable);
-            }
-        }    
+                    dueExecutables.Add(executable);
+                
+                    executable.ExecutedAt(now);
+                }
+            }    
 
-        // No due executables
-        if (dueExecutables is null)
-        {
-            if (_logger?.IsEnabled(LogLevel.Trace) ?? false)
+            // No due executables
+            if (dueExecutables is null)
             {
-                _logger.LogTrace("No jobs due.");
-            }
+                if (_logger?.IsEnabled(LogLevel.Trace) ?? false)
+                {
+                    _logger.LogTrace("No jobs due.");
+                }
 
-            return Task.CompletedTask;
+                return Task.CompletedTask;
+            }    
         }
 
         // Execute all due executables
-        return Task.WhenAll(dueExecutables.Select(executable => RunExecutableAtAsync(now, executable, cancellationToken)));
+        return Task.WhenAll(dueExecutables.Select(executable => RunExecutableAtAsync(executable, cancellationToken)));
     }
 
-    private async Task RunExecutableAtAsync(DateTimeOffset now, ScheduledExecutable executable, CancellationToken cancellationToken)
+    private async Task RunExecutableAtAsync(ScheduledExecutable executable, CancellationToken cancellationToken)
     {
         try
         {
@@ -76,7 +88,12 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
                 {
                     try
                     {
-                        await ExecuteAsync();
+                        if (_logger?.IsEnabled(LogLevel.Debug) ?? false)
+                        {
+                            _logger.LogDebug("Executing {Executable}.", executable.ToString());
+                        }
+
+                        await executable.ExecuteAsync(cancellationToken);
                     }
                     finally
                     {
@@ -86,7 +103,12 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
             }
             else
             {
-                await ExecuteAsync();
+                if (_logger?.IsEnabled(LogLevel.Debug) ?? false)
+                {
+                    _logger.LogDebug("Executing {Executable}.", executable.ToString());
+                }
+
+                await executable.ExecuteAsync(cancellationToken);
             }
         }
         catch (OperationCanceledException) { } // Ignore
@@ -95,19 +117,6 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
             _logger?.LogError(ex, "An error occurred while executing the scheduled executable.");
             
             Debugger.Break();
-        }
-
-
-        Task ExecuteAsync()
-        {
-            if (_logger?.IsEnabled(LogLevel.Debug) ?? false)
-            {
-                _logger.LogDebug("Executing {Executable}.", executable.ToString());
-            }
-
-            executable.ExecutedAt(now);
-
-            return executable.ExecuteAsync(cancellationToken);
         }
     }
     /// <summary>
@@ -139,9 +148,19 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
             StartRequested?.Invoke(this, EventArgs.Empty);
         }
     }
-    public IScheduleInterval Schedule<TExecutable>() where TExecutable : IExecutable
+
+    /// <summary>
+    /// Schedules a new job of the specified executable type.
+    /// </summary>
+    /// <typeparam name="TExecutable">The type of executable to schedule.</typeparam>
+    /// <param name="jobId">The optional job identifier. If not provided, a default Id will be used.</param>
+    /// <returns>An instance of <see cref="IScheduleInterval"/> that allows configuring the scheduling interval for the job.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if an executable with the same ID has already been scheduled.
+    /// </exception>
+    public IScheduleInterval Schedule<TExecutable>(string? jobId = null) where TExecutable : IExecutable
     {
-        var executableId = ScheduledExecutableHelper.GetExecutableId<TExecutable>();
+        var executableId = jobId ?? ScheduledExecutableHelper.GetExecutableId<TExecutable>();
         var executable = new ScheduledExecutable(executableId, typeof(TExecutable), _serviceScopeFactory);
         if (!_scheduledJobs.TryAdd(executable.ExecutableId, executable))
         {
@@ -149,10 +168,22 @@ public class Scheduler(IServiceScopeFactory serviceScopeFactory,
         }
         return executable;
     }
-    
+
+    /// <summary>
+    /// Removes a scheduled job with the specified job Id from the scheduler.
+    /// </summary>
+    /// <param name="jobId">The identifier of the job to be removed from the scheduler.</param>
+    public void Deschedule(string jobId)
+    {
+        _scheduledJobs.TryRemove(jobId, out _);
+    }
+
+    /// <summary>
+    ///  Removes a job based on its type
+    /// </summary>
     public void Deschedule<TExecutable>() where TExecutable : IExecutable
     {
         var executableId = ScheduledExecutableHelper.GetExecutableId<TExecutable>();
-        _scheduledJobs.TryRemove(executableId, out _);
+        Deschedule(executableId);   
     }
 }

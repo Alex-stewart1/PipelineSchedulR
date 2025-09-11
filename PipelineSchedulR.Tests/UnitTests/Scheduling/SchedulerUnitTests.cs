@@ -10,19 +10,16 @@ public class SchedulerUnitTests
 {
     public class Start
     {
-        private readonly Scheduler _scheduler;
-        public Start()
-        {
-            _scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
-        }
         [Fact]
         public void WhenSchedulerAlreadyStarted_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            _scheduler.Start();
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            
+            scheduler.Start();
 
             // Act
-            Action act = () => _scheduler.Start();
+            Action act = () => scheduler.Start();
 
             // Assert
             act.Should().Throw<InvalidOperationException>()
@@ -32,22 +29,26 @@ public class SchedulerUnitTests
         [Fact]
         public void WhenSchedulerNotStarted_ShouldSetHasStartedToTrue()
         {
+            // Arrange
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            
             // Act
-            _scheduler.Start();
+            scheduler.Start();
 
             // Assert
-            _scheduler.HasStarted.Should().BeTrue();
+            scheduler.HasStarted.Should().BeTrue();
         }
 
         [Fact]
         public void ShouldTriggerStartRequestedEvent()
         {
             // Arrange
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
             bool eventTriggered = false;
-            _scheduler.StartRequested += (sender, args) => eventTriggered = true;
+            scheduler.StartRequested += (sender, args) => eventTriggered = true;
 
             // Act
-            _scheduler.Start();
+            scheduler.Start();
 
             // Assert
             eventTriggered.Should().BeTrue();
@@ -57,19 +58,15 @@ public class SchedulerUnitTests
 
     public class StartAt
     {
-        private readonly Scheduler _scheduler;
-        public StartAt()
-        {
-            _scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
-        }
         [Fact]
         public void Start_WhenSchedulerAlreadyStarted_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            _scheduler.Start();
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            scheduler.Start();
 
             // Act
-            Action act = () => _scheduler.Start();
+            Action act = () => scheduler.Start();
 
             // Assert
             act.Should().Throw<InvalidOperationException>()
@@ -79,22 +76,26 @@ public class SchedulerUnitTests
         [Fact]
         public void Start_WhenSchedulerNotStarted_ShouldSetHasStartedToTrue()
         {
+            // Arrange
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            
             // Act
-            _scheduler.Start();
+            scheduler.Start();
 
             // Assert
-            _scheduler.HasStarted.Should().BeTrue();
+            scheduler.HasStarted.Should().BeTrue();
         }
 
         [Fact]
         public void Start_ShouldTriggerStartRequestedEvent()
         {
             // Arrange
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
             bool eventTriggered = false;
-            _scheduler.StartRequested += (sender, args) => eventTriggered = true;
+            scheduler.StartRequested += (sender, args) => eventTriggered = true;
 
             // Act
-            _scheduler.Start();
+            scheduler.Start();
 
             // Assert
             eventTriggered.Should().BeTrue();
@@ -104,10 +105,11 @@ public class SchedulerUnitTests
         public void StartAt_WhenSchedulerAlreadyStarted_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            _scheduler.Start();
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            scheduler.Start();
 
             // Act
-            Action act = () => _scheduler.StartAt(DateTimeOffset.Now);
+            Action act = () => scheduler.StartAt(DateTimeOffset.Now);
 
             // Assert
             act.Should().Throw<InvalidOperationException>()
@@ -117,11 +119,14 @@ public class SchedulerUnitTests
         [Fact]
         public void StartAt_WhenSchedulerNotStarted_ShouldSetHasStartedToTrue()
         {
+            // Arrange
+            var scheduler = new Scheduler(Substitute.For<IServiceScopeFactory>(), new SchedulerOptions());
+            
             // Act
-            _scheduler.StartAt(DateTimeOffset.Now);
+            scheduler.StartAt(DateTimeOffset.Now);
 
             // Assert
-            _scheduler.HasStarted.Should().BeTrue();
+            scheduler.HasStarted.Should().BeTrue();
         }
     }
 

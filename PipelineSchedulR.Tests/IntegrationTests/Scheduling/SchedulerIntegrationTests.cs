@@ -171,6 +171,45 @@ public class SchedulerIntegrationTests
         // Assert
         executableMock.ExecutionTimes.Count.Should().Be(0);
     }
+
+    [Fact]
+    public async Task RunJobsDueAtAsync_CalledMultipleTimesWithQuickSuccession_ShouldExecuteJobsOnlyOnce()
+    {
+        // Arrange
+        var executableMock = new ExecutableMock1();
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(provider => executableMock)
+            .AddSchedulR((pipelineBuilder, _) =>
+            {
+                pipelineBuilder
+                    .Executable<ExecutableMock1>();
+            })
+            .BuildServiceProvider()
+            .UseSchedulR(scheduler =>
+            {
+                scheduler
+                    .Schedule<ExecutableMock1>()
+                    .EveryMinutes(1);
+            });
+
+        var now = DateTimeOffset.UtcNow;
+
+        var scheduler = serviceProvider.GetRequiredService<Scheduler>();
+        
+        scheduler.StartAt(now);
+        
+        // Act
+        var tasks = new Task[5];
+
+        Parallel.For(0, 5, 
+            i => tasks[i] = scheduler.RunJobsDueAtAsync(now.AddMinutes(1), CancellationToken.None));
+        
+        await Task.WhenAll(tasks);
+        
+        // Assert
+        executableMock.ExecutionTimes.Count.Should().Be(1);
+    }
+    
     [Fact]
     public async Task RunJobsDueAtAsync_JobRunningShouldPreventOverlap_ShouldNotExecuteJob()
     {
@@ -422,5 +461,41 @@ public class SchedulerIntegrationTests
         await scheduler.RunJobsDueAtAsync(now.AddMinutes(2).AddSeconds(30), CancellationToken.None); 
         
         executableMock.ExecutionTimes.Count.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task RunJobsDueAtAsync_JobScheduledAfterStarted_ShouldStillBeExecuted()
+    {
+        // Arrange
+        var executableMock = new ExecutableMock1();
+        var serviceProvider = new ServiceCollection()
+            .AddScoped(provider => executableMock)
+            .AddSchedulR((pipelineBuilder, _) =>
+            {
+                pipelineBuilder
+                    .Executable<ExecutableMock1>();
+            })
+            .BuildServiceProvider()
+            .UseSchedulR(scheduler => { });
+
+        var now = DateTimeOffset.UtcNow;
+
+        var scheduler = serviceProvider.GetRequiredService<Scheduler>();
+        
+        scheduler.StartAt(now);
+
+        scheduler
+            .Schedule<ExecutableMock1>()
+            .EveryMinutes(1)
+            .RunOnStart();
+
+        // Act & Assert
+        await scheduler.RunJobsDueAtAsync(now, CancellationToken.None); 
+
+        executableMock.ExecutionTimes.Count.Should().Be(1);
+        
+        await scheduler.RunJobsDueAtAsync(now.AddMinutes(1), CancellationToken.None); 
+
+        executableMock.ExecutionTimes.Count.Should().Be(2);
     }
 }
